@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useMutation } from 'react-router-dom';
+import { useMutation } from '@apollo/client';
 import { SAVE_BOOK } from '../utils/mutations';
 import {
   Container,
@@ -9,7 +9,7 @@ import {
   Card,
   Row
 } from 'react-bootstrap';
-
+import { searchGoogleBooks } from '../utils/API';
 import Auth from '../utils/auth';
 
 import { saveBookIds, getSavedBookIds } from '../utils/localStorage';
@@ -22,7 +22,7 @@ const SearchBooks = () => {
 
   // create state to hold saved bookId values
   const [savedBookIds, setSavedBookIds] = useState(getSavedBookIds());
-  const [saveBook, { error, data }] = useMutation(SAVE_BOOK);
+  const [saveBook] = useMutation(SAVE_BOOK);
 
   // set up useEffect hook to save `savedBookIds` list to localStorage on component unmount
   // learn more here: https://reactjs.org/docs/hooks-effect.html#effects-with-cleanup
@@ -75,11 +75,17 @@ const SearchBooks = () => {
     }
 
     try {
-      const response = await saveBook(bookToSave, token);
+      const { data } = await saveBook({
+        variables: {
+          userId: Auth.getProfile().data._id,
+          input: bookToSave
+        }
+      });
 
-      if (!response.ok) {
-        throw new Error('something went wrong!');
+      if (!data) {
+        throw new Error('Something went wrong!')
       }
+
 
       // if book successfully saves to user's account, save book id to state
       setSavedBookIds([...savedBookIds, bookToSave.bookId]);
