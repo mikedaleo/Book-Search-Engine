@@ -4,7 +4,7 @@ input BookInput {
     description: String!
     bookId: String!
     image: String!
-    link: String!
+    link: String
     title: String!
 }
 
@@ -22,7 +22,7 @@ type Book {
     description: String!
     title: String!
     image: String!
-    link: String!
+    link: String
 }
 
 type Auth {
@@ -38,7 +38,7 @@ type Mutation {
     login(email: String!, password: String!): Auth
     addUser(username: String!, email: String!, password: String!): Auth
     saveBook(userId: ID!, input: BookInput): User
-    removeBook(userId: ID!, bookId: String!): User
+    removeBook(bookId: String!): User
 }`
 
 module.exports = typeDefs;

@@ -18,15 +18,12 @@ import { removeBookId } from '../utils/localStorage';
 const SavedBooks = () => {
   const { userId } = useParams();
   const userData = useQuery(GET_ME);
-  const [removeBook, { error }] = useMutation(
+  console.log(userData);
+  const [removeBook] = useMutation(
     REMOVE_BOOK, {
-    refetchQueries: [
-      GET_ME,
-      'me'
-    ]
+    refetchQueries: [{ query: GET_ME }]
   });
 
-  const user = data?.me || {};
 
   if (Auth.loggedIn() && Auth.getProfile().data._id === userId) {
     return <Navigate to="/saved" />;
@@ -36,7 +33,11 @@ const SavedBooks = () => {
     return <div>Loading...</div>;
   }
 
-  if (!user?.name) {
+  if (userData.error) {
+    return <div>Error loading saved books.</div>;
+  }
+
+  if (!userData.data.me?.username) {
     return (
       <h4> You need to be logged in to see your saved books.</h4>
     );
@@ -52,7 +53,7 @@ const SavedBooks = () => {
     }
 
     try {
-      const { data } = await removeBook({
+      await removeBook({
         variables: { bookId },
       });
 
@@ -65,19 +66,19 @@ const SavedBooks = () => {
 
   return (
     <>
-      <div fluid className="text-light bg-dark p-5">
+      <div fluid="true" className="text-light bg-dark p-5">
         <Container>
           <h1>Viewing saved books!</h1>
         </Container>
       </div>
       <Container>
         <h2 className='pt-5'>
-          {userData.savedBooks.length
-            ? `Viewing ${userData.savedBooks.length} saved ${userData.savedBooks.length === 1 ? 'book' : 'books'}:`
+          {userData.data.me.savedBooks.length
+            ? `Viewing ${userData.data.me.savedBooks.length} saved ${userData.data.me.savedBooks.length === 1 ? 'book' : 'books'}:`
             : 'You have no saved books!'}
         </h2>
         <Row>
-          {userData.savedBooks.map((book) => {
+          {userData.data.me.savedBooks.map((book) => {
             return (
               <Col md="4">
                 <Card key={book.bookId} border='dark'>
