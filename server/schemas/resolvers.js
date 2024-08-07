@@ -4,9 +4,12 @@ const { AuthenticationError, signToken } = require('../utils/auth');
 
 const resolvers = {
     Query: {
-        me: async (parent, { _id }) => {
-            return User.findById({ _id });
-        }
+        me: async (parent, args, context) => {
+            if (context.user) {
+                return User.findOne({ _id: context.user._id });
+            }
+            throw AuthenticationError;
+        },
     },
     Mutation: {
         login: async (parent, { username, email, password }) => {
@@ -18,7 +21,7 @@ const resolvers = {
 
             const correctPw = await user.isCorrectPassword(password);
 
-            if(!correctPw) {
+            if (!correctPw) {
                 throw AuthenticationError
             }
 
@@ -34,7 +37,7 @@ const resolvers = {
         saveBook: async (parent, { userId, input }) => {
             return User.findOneAndUpdate(
                 { _id: userId },
-                { $addToSet: { savedBooks: input }},
+                { $addToSet: { savedBooks: input } },
                 {
                     new: true,
                     runValidators: true,
@@ -44,9 +47,11 @@ const resolvers = {
         removeBook: async (parent, { userId, bookId }) => {
             return User.findOneAndUpdate(
                 { _id: userId },
-                { $pull: { savedBooks: bookId }},
+                { $pull: { savedBooks: bookId } },
                 { new: true }
             );
         },
     },
 };
+
+module.exports = resolvers;
