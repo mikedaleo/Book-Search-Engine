@@ -45,18 +45,18 @@ const resolvers = {
                 }
             );
         },
-        removeBook: async (parent, { bookId }, context) => {
-            if (context.user) {
+        removeBook: async (parent, { userId, bookId }, context) => {
+            try {
                 const updatedUser = await User.findOneAndUpdate(
-                    { _id: context.user._id },
-                    { $pull: { savedBooks: bookId } },
+                    { _id: userId },
+                    { $pull: { savedBooks: { bookId: bookId } } },
                     { new: true }
                 );
-                console.log(updatedUser);
                 return updatedUser;
+            } catch (err) {
+                console.error(err)
             }
-            throw AuthenticationError;
-        },
+        }
     },
 };
 
