@@ -18,11 +18,8 @@ import { removeBookId } from '../utils/localStorage';
 const SavedBooks = () => {
   const { userId } = useParams();
   const userData = useQuery(GET_ME);
-  console.log(userData);
-  const [removeBook] = useMutation(
-    REMOVE_BOOK, {
-    refetchQueries: [{ query: GET_ME }]
-  });
+  console.log('userData:', userData);
+  const [removeBook] = useMutation(REMOVE_BOOK);
 
 
   if (Auth.loggedIn() && Auth.getProfile().data._id === userId) {
@@ -53,9 +50,14 @@ const SavedBooks = () => {
     }
 
     try {
-      await removeBook({
-        variables: { bookId },
+      const result = await removeBook({
+        variables: { 
+          userId: Auth.getProfile().data._id,
+          bookId: bookId 
+        },
       });
+
+      console.log('removeBook result:', result);
 
       // upon success, remove book's id from localStorage
       removeBookId(bookId);
@@ -66,7 +68,7 @@ const SavedBooks = () => {
 
   return (
     <>
-      <div fluid="true" className="text-light bg-dark p-5">
+      <div className="text-light bg-dark p-5">
         <Container>
           <h1>Viewing saved books!</h1>
         </Container>
@@ -84,7 +86,7 @@ const SavedBooks = () => {
                 <Card key={book.bookId} border='dark'>
                   {book.image ? <Card.Img src={book.image} alt={`The cover for ${book.title}`} variant='top' /> : null}
                   <Card.Body>
-                    <Card.Title>{book.title}</Card.Title>
+                    <Card.Title><a href={`https://books.google.com/books?id=${book.bookId}`}>{book.title}</a></Card.Title>
                     <p className='small'>Authors: {book.authors}</p>
                     <Card.Text>{book.description}</Card.Text>
                     <Button className='btn-block btn-danger' onClick={() => handleDeleteBook(book.bookId)}>
